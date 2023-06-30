@@ -3,11 +3,11 @@
 #
 # Install epel-release rpm package
 #
-
 - name: "Install EPEL repository on RHEL"
   yum:
     name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
     state: "present"
+  when: install_rpm_repositories|bool
 
 #
 # Install optional and extras repositories because EPEL packages may depend on

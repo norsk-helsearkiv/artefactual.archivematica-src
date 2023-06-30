@@ -85,7 +85,9 @@
       gpgcheck: "{{ item.value.gpgcheck|default('1') }}"
     loop: "{{ lookup('dict',archivematica_src_rpm_repositories) }}"
 
-  when: (archivematica_src_install_am == "rpm" or archivematica_src_install_ss == "rpm")
+  when:
+    - (archivematica_src_install_am == "rpm" or archivematica_src_install_ss == "rpm")
+    - install_rpm_repositories|bool
 
 #
 # SELinux configuration
