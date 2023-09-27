@@ -1,46 +1,65 @@
 - name: "Install required deb packages "
-  package:
-    name: "{{ archivematica_src_am_fixity_deps }}"
-    state: "present"
-
-- name: "Get git config global safe directories dir"
-  shell: "git config --global --get-all safe.directory || echo ''"
-  register: "__git_config_global_safe_dir"
-
-- name: "Set Fixity source directory as git safe dir"
-  command: "git config --global --add safe.directory {{ archivematica_src_dir }}/fixity"
+  apt:
+    name: "{{ item }}"
+    state: installed
+  with_items:
+    - "sqlite3"
+    - "moreutils"
+    - "mailutils"
   when:
-    - archivematica_src_dir + '/fixity' not in __git_config_global_safe_dir.stdout_lines
+    - ansible_os_family == "Debian"
 
-- name: "Download code"
-  git:
-    repo: "https://github.com/artefactual/fixity.git"
-    dest: "{{ archivematica_src_dir }}/fixity"
-    version: "{{ archivematica_src_fixity_version }}"
-    force: "yes"
+- name: "Install required rpm packages"
+  yum:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - "sqlite"
+    - "moreutils"
+    - "mailx"
+  when:
+    - ansible_os_family == "RedHat"
 
-- name: "Install pip dependencies in virtualenv"
-  pip:
-    chdir: "{{ archivematica_src_dir }}/fixity"
-    requirements: "requirements.txt"
-    virtualenv: "{{ archivematica_src_fixity_virtualenv }}"
-    virtualenv_command: "{{ archivematica_src_virtualenv }}"
-    virtualenv_python: "{{ archivematica_src_virtualenv_python }}"
-    state: "latest"
+- name: "Install fixity rpm package"
+  yum:
+    name: "fixity"
+    state: latest
+  when:
+    - ansible_os_family == "RedHat"
+    - archivematica_src_install_fixity == "rpm"
 
-- name: "Run setup.py"
-  shell: "{{ archivematica_src_fixity_virtualenv }}/bin/python setup.py install"
-  args:
-    chdir: "{{ archivematica_src_dir }}/fixity"
 
-- name: "Change virtualenv owner to archivematica"
-  file:
-     path: "{{ archivematica_src_fixity_virtualenv }}"
-     state: "directory"
-     owner: "archivematica"
-     group: "archivematica"
-     recurse: "yes"
+- name: "Install fixity from source"
+  block:
+  - name: "Download code"
+    git:
+      repo: "https://github.com/artefactual/fixity.git"
+      dest: "{{ archivematica_src_dir }}/fixity"
+      version: "{{ archivematica_src_fixity_version }}"
+      force: "yes"
 
+  - name: "Install pip dependencies in virtualenv"
+    pip:
+      chdir: "{{ archivematica_src_dir }}/fixity"
+      requirements: "requirements.txt"
+      virtualenv: "{{ archivematica_src_fixity_virtualenv }}"
+      state: "latest"
+
+  - name: "Run setup.py"
+    shell: "{{ archivematica_src_fixity_virtualenv }}/bin/python setup.py install"
+    args:
+      chdir: "{{ archivematica_src_dir }}/fixity"
+
+  - name: "Change virtualenv owner to archivematica"
+    file:
+       path: "{{ archivematica_src_fixity_virtualenv }}"
+       state: "directory"
+       owner: "archivematica"
+       group: "archivematica"
+       recurse: "yes"
+
+  when: "archivematica_src_install_fixity|bool"
+ 
 - name: "Create config file"
   template:
      src: "etc/sysconfig/fixity.j2"
@@ -57,33 +76,36 @@
      owner: "archivematica"
      group: "archivematica"
 
-- name: "Create fixity script"
-  template:
-     src: "bin/{{ item }}"
-     dest: "/usr/local/bin/{{ item }}"
-     mode: 0755
-     owner: "root"
-  with_items:
-    - "fixity"
-    - "fixity-cron"
+- name: "Configure fixity automated cron job"
+  block:
+  - name: "Create fixity script"
+    template:
+       src: "bin/{{ item }}"
+       dest: "/usr/local/bin/{{ item }}"
+       mode: 0755
+       owner: "root"
+    with_items:
+      - "fixity"
+      - "fixity-cron"
 
-- name: "Create cron job"
-  cron:
-     name: "Run fixity"
-     job: "/usr/local/bin/fixity-cron"
-     minute: "0"
-     hour: "3"
-     day: "1"
-     month: "*/3"
-     user: "archivematica"
-     cron_file: "fixity"
-     state: "present"
+  - name: "Create cron job"
+    cron:
+       name: "Run fixity"
+       job: "/usr/local/bin/fixity-cron"
+       minute: "0"
+       hour: "3"
+       day: "1"
+       month: "*/3"
+       user: "archivematica"
+       cron_file: "fixity"
+       state: "present"
 
-- name: "Create cron job"
-  cron:
-     name: "SHELL"
-     env: yes
-     value: "/bin/bash"
-     cron_file: "fixity"
-     user: "archivematica"
-     state: "present"
+  - name: "Create cron job"
+    cron:
+       name: "SHELL"
+       env: yes
+       value: "/bin/bash"
+       cron_file: "fixity"
+       user: "archivematica"
+       state: "present"
+  when: archivematica_src_install_fixity_cronjob|bool
