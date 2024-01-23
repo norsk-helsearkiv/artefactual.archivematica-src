@@ -18,13 +18,14 @@
   tags:
     - "always" # inocuous to use always here
 
-- include_tasks: "nodejs.yml"
-  tags:
-    - "amsrc-ss"
-    - "amsrc-ss-websrv"
-    - "amsrc-pipeline"
-    - "amsrc-pipeline-websrv"
-    - "amsrc-nodejs"
+# Not used at NHA
+#- include_tasks: "nodejs.yml"
+#  tags:
+#    - "amsrc-ss"
+#    - "amsrc-ss-websrv"
+#    - "amsrc-pipeline"
+#    - "amsrc-pipeline-websrv"
+#    - "amsrc-nodejs"
 
 - name: "Load default environment strings"
   include_vars: "envs.yml"
