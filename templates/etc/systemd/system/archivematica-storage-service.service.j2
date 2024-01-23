@@ -10,8 +10,10 @@ User=archivematica
 Group=archivematica
 EnvironmentFile=-{{ systemd_environment_path }}/archivematica-storage-service
 {% if archivematica_src_syslog_enabled|bool %}
-StandardOutput=syslog
-StandardError=syslog
+#StandardOutput=syslog
+#StandardError=syslog
+StandardOutput=journal
+StandardError=journal
 SyslogIdentifier=StorageStdout
 SyslogFacility={{ archivematica_src_syslog_storageservice_facility }}
 {% endif %}

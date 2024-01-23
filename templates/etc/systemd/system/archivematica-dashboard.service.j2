@@ -12,8 +12,10 @@ User=archivematica
 Group=archivematica
 EnvironmentFile=-{{ systemd_environment_path }}/archivematica-dashboard
 {% if archivematica_src_syslog_enabled|bool %}
-StandardOutput=syslog
-StandardError=syslog
+#StandardOutput=syslog
+#StandardError=syslog
+StandardOutput=journal
+StandardError=journal
 SyslogIdentifier=DashboardStdout
 SyslogFacility={{ archivematica_src_syslog_dashboard_facility }}
 {% endif %}
