@@ -102,6 +102,7 @@
       path: "{{ archivematica_src_dir }}"
   when:
     - (archivematica_src_install_am|bool or archivematica_src_install_ss|bool)
+    - (archivematica_src_install_am != "rpm" or archivematica_src_install_ss != "rpm")
 
 #
 # Configure RPM repositories and dependencies
