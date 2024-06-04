@@ -195,7 +195,8 @@
       - "amsrc-ss-websrv"
   when:
     - "archivematica_src_install_ss|bool or
-       archivematica_src_install_ss == 'rpm'"
+       archivematica_src_install_ss == 'rpm' or
+       archivematica_src_reset_ss_db|bool"
 
 - import_tasks: "ss-migrate-sqlite3.yml"
   tags:
@@ -278,7 +279,8 @@
 
   when:
     - "archivematica_src_install_am|bool or
-       archivematica_src_install_am == 'rpm'"
+       archivematica_src_install_am == 'rpm' or
+       archivematica_src_reset_mcpdb|bool"
 
 
 #
