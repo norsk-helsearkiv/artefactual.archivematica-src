@@ -8,7 +8,7 @@ upstream archivematica_storage_service_backend {
 
 server {
 
-    listen 8000 ssl;
+    listen 8443 ssl;
     {% if archivematica_src_syslog_enabled|bool %}
     error_log syslog:server={{ archivematica_src_syslog_server }},tag=storage info;
     access_log syslog:server={{ archivematica_src_syslog_server }},tag=storage combined;
