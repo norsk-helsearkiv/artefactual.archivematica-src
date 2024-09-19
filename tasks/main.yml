@@ -344,7 +344,7 @@
 # fixity - nha
 #
 
-- include: "fixity.yml"
+- import_tasks: "fixity.yml"
   tags:
     - "amsrc-fixity"
   when: archivematica_src_install_fixity == "rpm"
