@@ -86,6 +86,9 @@
       regexp: "^ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_PROMETHEUS_BIND_PORT="
       line: "ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_PROMETHEUS_BIND_PORT=96{{ '%02d' | format(item|int) }}"
     loop: "{{ range(1, archivematica_src_am_mcpclient_instances|int  + 1, 1)|list }}"
+    when:
+    - ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_PROMETHEUS_BIND_ADDRESS is defined
+    - ARCHIVEMATICA_MCPCLIENT_MCPCLIENT_PROMETHEUS_BIND_ADDRESS | length > 0)
 
   when: archivematica_src_am_mcpclient_instances > 1
   tags: amsrc-mcp-client
