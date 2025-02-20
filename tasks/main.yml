@@ -246,9 +246,10 @@
   when:
     - "archivematica_src_install_am|bool"
 
+## NHA EDIT - added archivematica rpm explicitly. It's skipped on upgrade from 1.15.x
 - name: "Install archivematica using packages"
   yum:
-    name: "archivematica-common,archivematica-dashboard,archivematica-mcp-server,archivematica-mcp-client"
+    name: "archivematica,archivematica-common,archivematica-dashboard,archivematica-mcp-server,archivematica-mcp-client"
     state: "latest"
   when:
     - archivematica_src_install_am == "rpm"
