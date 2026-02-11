@@ -245,9 +245,19 @@
   when:
     - "archivematica_src_install_am|bool"
 
+## archivematica-1.18.0-2 blir ikke installert
+## pakken "archivematica" er ikke definert i install-tasken under
+## legger den til og prøver på nytt
+#- name: "Install archivematica using packages"
+#  yum:
+#    name: "archivematica-common,archivematica-dashboard,archivematica-mcp-server,archivematica-mcp-client"
+#    state: "latest"
+#  when:
+#    - archivematica_src_install_am == "rpm"
+
 - name: "Install archivematica using packages"
   yum:
-    name: "archivematica-common,archivematica-dashboard,archivematica-mcp-server,archivematica-mcp-client"
+    name: "archivematica,archivematica-common,archivematica-dashboard,archivematica-mcp-server,archivematica-mcp-client"
     state: "latest"
   when:
     - archivematica_src_install_am == "rpm"
