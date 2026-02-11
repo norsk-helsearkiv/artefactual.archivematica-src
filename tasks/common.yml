@@ -147,10 +147,11 @@
     - ansible_selinux is defined and ansible_selinux != False and ansible_selinux.status == 'enabled'
     - ansible_os_family in ['RedHat','Rocky']
 
-- name: "SELinux: Allow nginx to use ports 8000 and 8001"
+# NHA, added 8443
+- name: "SELinux: Allow nginx to use ports 8000, 8001 and 8443"
   become: "yes"
   seport:
-    ports: "8000,8001"
+    ports: "8000,8001,8443"
     proto: "tcp"
     setype: "http_port_t"
     state: "present"
