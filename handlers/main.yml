@@ -3,3 +3,15 @@
   service: 
     name: "rsyslog"
     state: "restarted"
+
+- name: "Run SS collectstatic"
+  shell: >
+    {% if archivematica_src_install_ss == 'rpm' %}
+    /usr/share/python/archivematica-storage-service/bin/python
+    {% else %}
+    {{ archivematica_src_ss_virtualenv }}/bin/python
+    {% endif %}
+    -m archivematica.storage_service.manage collectstatic --noinput
+  args:
+    executable: /bin/bash
+  environment: "{{ archivematica_src_ss_environment }}"

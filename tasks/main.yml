@@ -169,6 +169,7 @@
     - "amsrc-ss"
   when:
     - "archivematica_src_install_ss|bool"
+    - "archivematica_src_install_ss != 'rpm'"
 
 - name: "Install archivematica storage service rpm"
   yum:
@@ -176,6 +177,60 @@
     state: latest
   when:
     - archivematica_src_install_ss == "rpm"
+
+- name: "Detect Python path for RPM installation"
+  shell: |
+    # Try virtualenv path first (standard location)
+    if [ -f "/usr/share/archivematica/virtualenvs/archivematica-storage-service/bin/python" ]; then
+      echo "/usr/share/archivematica/virtualenvs/archivematica-storage-service/bin/python"
+    # Try alternative virtualenv location
+    elif [ -f "/usr/share/python/archivematica-storage-service/bin/python" ]; then
+      echo "/usr/share/python/archivematica-storage-service/bin/python"
+    # Fall back to system Python
+    else
+      echo "/usr/bin/python3"
+    fi
+  register: rpm_python_path
+  changed_when: false
+  when:
+    - archivematica_src_install_ss == "rpm"
+
+- name: "Detect staticfiles.json path for RPM installation"
+  shell: |
+    # Try common locations
+    for path in \
+      "/usr/lib/archivematica/storage-service/static/staticfiles.json" \
+      "/usr/lib/archivematica/storage-service/staticfiles.json" \
+      "/var/archivematica/storage-service/static/staticfiles.json"; do
+      if [ -f "$path" ] || [ "$(dirname "$path")" != "/" ]; then
+        echo "$path"
+        exit 0
+      fi
+    done
+    # Default fallback
+    echo "/usr/lib/archivematica/storage-service/static/staticfiles.json"
+  register: rpm_staticfiles_path
+  changed_when: false
+  when:
+    - archivematica_src_install_ss == "rpm"
+
+- name: "Check if staticfiles.json exists after RPM install/upgrade"
+  stat:
+    path: "{{ rpm_staticfiles_path.stdout }}"
+  register: rpm_staticfiles_json
+  when:
+    - archivematica_src_install_ss == "rpm"
+
+- name: "Run collectstatic for RPM installation if needed"
+  shell: >
+    {{ rpm_python_path.stdout }} -m archivematica.storage_service.manage
+    collectstatic --noinput
+  args:
+    executable: /bin/bash
+  environment: "{{ archivematica_src_ss_environment }}"
+  when:
+    - archivematica_src_install_ss == "rpm"
+    - not rpm_staticfiles_json.stat.exists or archivematica_src_force_collectstatic|default(false)|bool
 
 - name: "Complete storage service deployment"
   block:
@@ -244,6 +299,7 @@
       - "amsrc-pipeline-instcode"
   when:
     - "archivematica_src_install_am|bool"
+    - "archivematica_src_install_am != 'rpm'"
 
 ## archivematica-1.18.0-2 blir ikke installert
 ## pakken "archivematica" er ikke definert i install-tasken under
@@ -382,5 +438,5 @@
   tags:
     - "amsrc-configure"
   when:
-    - "archivematica_src_install_ss|bool or archivematica_src_install_ss=='rpm'"
+    - "archivematica_src_install_ss|bool"
     - "archivematica_src_configure_gpg is defined"
