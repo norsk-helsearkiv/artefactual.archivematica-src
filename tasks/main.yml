@@ -25,6 +25,11 @@
     - "amsrc-pipeline"
     - "amsrc-pipeline-websrv"
     - "amsrc-nodejs"
+  when:
+    # Node/npm is only needed for source installs (frontend build); RPM packages include built assets.
+    - "archivematica_src_install_am|bool or archivematica_src_install_ss|bool"
+    - "archivematica_src_install_am != 'rpm'"
+    - "archivematica_src_install_ss != 'rpm'"
 
 - name: "Load default environment strings"
   include_vars: "envs.yml"
@@ -301,17 +306,8 @@
     - "archivematica_src_install_am|bool"
     - "archivematica_src_install_am != 'rpm'"
 
-## archivematica-1.18.0-2 blir ikke installert
-## pakken "archivematica" er ikke definert i install-tasken under
-## legger den til og prøver på nytt
-#- name: "Install archivematica using packages"
-#  yum:
-#    name: "archivematica-common,archivematica-dashboard,archivematica-mcp-server,archivematica-mcp-client"
-#    state: "latest"
-#  when:
-#    - archivematica_src_install_am == "rpm"
-
 - name: "Install archivematica using packages"
+  # Include the top-level archivematica package to ensure RPM upgrades pull all components.
   yum:
     name: "archivematica,archivematica-common,archivematica-dashboard,archivematica-mcp-server,archivematica-mcp-client"
     state: "latest"
