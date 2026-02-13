@@ -92,6 +92,7 @@
 #
 
 - name: "Configure backward-compatible logging (dashboard)"
+  become: "yes"
   template:
     src: "{{ item }}"
     dest: /etc/archivematica/{{ item | basename | regex_replace('\.j2','') }}
@@ -103,6 +104,7 @@
   when: "archivematica_src_logging_backward_compatible|bool"
 
 - name: "Configure backward-compatible logging (MCPServer)"
+  become: "yes"
   template:
     src: "{{ item }}"
     dest: /etc/archivematica/{{ item | basename | regex_replace('\.j2','') }}
@@ -114,6 +116,7 @@
   when: "archivematica_src_logging_backward_compatible|bool"
 
 - name: "Configure backward-compatible logging (MCPClient)"
+  become: "yes"
   template:
     src: "{{ item }}"
     dest: /etc/archivematica/{{ item | basename | regex_replace('\.j2','') }}
@@ -127,6 +130,7 @@
 
 
 - name: "Remove backward-compatible logging"
+  become: "yes"
   file:
     path: "{{ item }}"
     state: "absent"
