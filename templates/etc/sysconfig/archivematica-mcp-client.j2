@@ -6,7 +6,7 @@ LC_ALL="en_US.UTF-8"
 LC_LANG="en_US.UTF-8"
 
 {% for key, value in archivematica_src_am_mcpclient_environment.items() %}
-{{ key }}={{ value }}
+{{ key }}="{{ value }}"
 {% endfor %}
 
 {% if clamav_uses_file_socket is not defined or archivematica_src_mcpclient_clamav_use_tcp|bool %}
