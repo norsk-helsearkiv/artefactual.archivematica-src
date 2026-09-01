@@ -61,7 +61,7 @@
 
 - name: "Combine environment strings"
   set_fact:
-    "{{ item.combined }}": "{{ item.provided|combine(item.defaults, recursive=False) }}"
+    "{{ item.combined }}": "{{ item.defaults|combine(item.provided, recursive=False) }}"
   with_items:
     - combined: "archivematica_src_am_dashboard_environment"
       provided: "{{ archivematica_src_am_dashboard_environment|default({}) }}"
@@ -75,6 +75,18 @@
     - combined: "archivematica_src_ss_environment"
       provided: "{{ archivematica_src_ss_environment|default({}) }}"
       defaults: "{{ _archivematica_src_ss_environment }}"
+  tags: "always"
+
+# SS_DB_URL is computed above with RFC 3986-encoded username/password
+# (see "Update the default SS environment hash when using MySQL"). It must
+# never be overridden by a user-provided archivematica_src_ss_environment,
+# since a manually-supplied or legacy URL could reintroduce unencoded
+# special characters and break the database connection string.
+- name: "Force computed SS_DB_URL to take precedence over any user-provided value"
+  set_fact:
+    archivematica_src_ss_environment: "{{ archivematica_src_ss_environment | combine({'SS_DB_URL': _archivematica_src_ss_environment.SS_DB_URL}) }}"
+  when:
+    - archivematica_src_ss_db_mysql_enabled|bool
   tags: "always"
 
 # Append SS_GUNICORN_WORKERS=3 only when SS_GUNICORN_WORKERS
